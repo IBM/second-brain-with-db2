@@ -1,0 +1,4 @@
+docling
+fastapi
+uvicorn
+ibm_db

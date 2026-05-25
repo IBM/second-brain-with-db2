@@ -1,6 +1,6 @@
 # second-brain-with-db2
 
-A FastAPI app for building a personal knowledge base — fetches URLs via [docling](https://github.com/DS4SD/docling), extracts the article content, and saves it as markdown for later retrieval. IBM Db2 backing is planned for later stages.
+A FastAPI app for building a personal knowledge base — fetches URLs via [docling](https://github.com/DS4SD/docling), extracts the article content, and stores it in IBM Db2 for later retrieval.
 
 Built incrementally — each stage under [stages/](stages/) is a self-contained, runnable snapshot showing how the app evolves from a minimal save endpoint toward more sophisticated processing.
 
@@ -9,6 +9,7 @@ Built incrementally — each stage under [stages/](stages/) is a self-contained,
 | Stage | Description |
 |-------|-------------|
 | [01-basic](stages/01-basic/) | Minimal save endpoint: paste URL → docling → markdown file on disk |
+| [02-db2](stages/02-db2/) | Replace filesystem write with INSERT into a Db2 `DOCUMENTS(CLOB)` table |
 
 ## Setup (RHEL)
 
