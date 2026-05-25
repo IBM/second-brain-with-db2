@@ -10,6 +10,7 @@ Replaces the filesystem write from stage 1 with an INSERT into a Db2 `DOCUMENTS`
 - **Save flow:** `converter.convert(url).document.export_to_markdown()` → `INSERT INTO DOCUMENTS` → return the new identity column value as `id`.
 - **No filesystem writes.** Existing markdown files from stage 1 in `~/second-brain/` are left untouched.
 - **Browse pages:** `GET /documents` lists saved docs (newest first), `GET /documents/{id}` renders the markdown as HTML via `marko`. Light inline CSS for readable typography.
+- **Title extraction:** during save, the last item labeled `DocItemLabel.TITLE` from the parsed `DoclingDocument` is stored in a nullable `TITLE` column. The list page shows `COALESCE(TITLE, URL)` as the link text, so documents without a recognizable title fall back to their URL.
 
 Assumes you're running as the Db2 instance owner (`db2inst1`) against the locally cataloged `SAMPLE` database. Edit the `ibm_db.connect(...)` line in `app.py` if your setup differs.
 
@@ -27,7 +28,7 @@ The script installs deps, runs `schema.sql` against the target database (**this 
 
 ```bash
 db2 connect to sample
-db2 "SELECT ID, URL, SAVED_AT, LENGTH(CONTENT) AS BYTES FROM DOCUMENTS ORDER BY ID DESC"
+db2 "SELECT ID, TITLE, URL, SAVED_AT, LENGTH(CONTENT) AS BYTES FROM DOCUMENTS ORDER BY ID DESC"
 db2 "SELECT SUBSTR(CONTENT, 1, 500) FROM DOCUMENTS WHERE ID = 1"
 db2 terminate
 ```

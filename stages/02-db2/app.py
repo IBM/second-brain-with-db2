@@ -4,6 +4,7 @@ import ibm_db
 import marko
 import uvicorn
 from docling.document_converter import DocumentConverter
+from docling_core.types.doc.labels import DocItemLabel
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
@@ -50,16 +51,17 @@ def index():
 
 @app.post("/save")
 def save(req: SaveRequest):
-    markdown = converter.convert(req.url).document.export_to_markdown()
-    stmt = ibm_db.prepare(conn, "INSERT INTO DOCUMENTS (URL, CONTENT) VALUES (?, ?)")
-    ibm_db.execute(stmt, (req.url, markdown))
+    doc = converter.convert(req.url).document
+    title = next((t.text for t in reversed(doc.texts) if t.label == DocItemLabel.TITLE), None)
+    stmt = ibm_db.prepare(conn, "INSERT INTO DOCUMENTS (URL, TITLE, CONTENT) VALUES (?, ?, ?)")
+    ibm_db.execute(stmt, (req.url, title, doc.export_to_markdown()))
     row = ibm_db.fetch_tuple(ibm_db.exec_immediate(conn, "VALUES IDENTITY_VAL_LOCAL()"))
     return {"id": int(row[0])}
 
 
 @app.get("/documents", response_class=HTMLResponse)
 def list_documents():
-    stmt = ibm_db.exec_immediate(conn, "SELECT ID, URL, SAVED_AT FROM DOCUMENTS ORDER BY ID DESC")
+    stmt = ibm_db.exec_immediate(conn, "SELECT ID, COALESCE(TITLE, URL), SAVED_AT FROM DOCUMENTS ORDER BY ID DESC")
     items = ""
     while (row := ibm_db.fetch_tuple(stmt)):
         items += f'<li><a href="/documents/{row[0]}">{escape(row[1])}</a> <small>({row[2]})</small></li>'
