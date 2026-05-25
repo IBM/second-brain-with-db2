@@ -22,11 +22,12 @@ Everything else in `app.py` is plumbing around that one line.
 
 ## Run
 
-From the project root, with `.venv` activated:
+From the project root (with `.venv` created):
 
 ```bash
-cd stages/01-basic
-python app.py
+./stages/01-basic/run.sh
 ```
+
+Or from this directory: `./run.sh`. The script activates the shared venv, installs this stage's requirements, and launches the app.
 
 Open http://127.0.0.1:8000.

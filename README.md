@@ -16,18 +16,14 @@ One shared venv at the project root, reused across stages:
 
 ```bash
 python3.12 -m venv .venv
-source .venv/bin/activate
-pip install -r stages/01-basic/requirements.txt
 ```
 
-When a later stage adds dependencies, install its `requirements.txt` the same way — pip is idempotent for already-installed packages.
+That's the only manual setup step. Each stage's `run.sh` activates the venv and installs that stage's requirements on launch.
 
 ## Run a stage
 
 ```bash
-source .venv/bin/activate
-cd stages/01-basic
-python app.py
+./stages/01-basic/run.sh
 ```
 
 Then open http://127.0.0.1:8000.
