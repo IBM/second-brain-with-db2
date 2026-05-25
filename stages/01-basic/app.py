@@ -7,7 +7,7 @@ from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
-VAULT_DIR = Path.home() / "url-vault"
+VAULT_DIR = Path.home() / "second-brain"
 VAULT_DIR.mkdir(exist_ok=True)
 
 converter = DocumentConverter()

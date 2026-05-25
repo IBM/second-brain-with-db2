@@ -4,7 +4,7 @@ The minimum viable second-brain-with-db2: one form, one POST endpoint, one markd
 
 ## What's in this stage
 
-- `POST /save` accepts `{"url": "..."}`, calls `DocumentConverter().convert(url).document.export_to_markdown()`, and writes the result to `~/url-vault/YYYY-MM-DD_HHMMSS.md` with a `Source: <url>` line prepended.
+- `POST /save` accepts `{"url": "..."}`, calls `DocumentConverter().convert(url).document.export_to_markdown()`, and writes the result to `~/second-brain/YYYY-MM-DD_HHMMSS.md` with a `Source: <url>` line prepended.
 - `GET /` serves a plain HTML page with one input, one button, and a status line. No JS framework, no build step.
 - `DocumentConverter` is instantiated once at module load — model init is expensive, so reuse it across requests.
 
