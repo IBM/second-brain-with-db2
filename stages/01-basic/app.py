@@ -19,8 +19,8 @@ class SaveRequest(BaseModel):
 
 
 PAGE = """<!doctype html>
-<title>url-vault</title>
-<h1>url-vault</h1>
+<title>second-brain-with-db2</title>
+<h1>second-brain-with-db2</h1>
 <input id="u" size="60" placeholder="https://...">
 <button onclick="save()">Save</button>
 <p id="s"></p>

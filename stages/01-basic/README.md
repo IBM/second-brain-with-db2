@@ -1,6 +1,6 @@
 # Stage 1: Basic save endpoint
 
-The minimum viable url-vault: one form, one POST endpoint, one markdown file per save.
+The minimum viable second-brain-with-db2: one form, one POST endpoint, one markdown file per save.
 
 ## What's in this stage
 

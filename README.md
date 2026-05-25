@@ -1,6 +1,6 @@
-# url-vault
+# second-brain-with-db2
 
-A small FastAPI app that fetches URLs via [docling](https://github.com/DS4SD/docling) and saves the extracted articles as markdown files in `~/url-vault/`.
+A FastAPI app for building a personal knowledge base — fetches URLs via [docling](https://github.com/DS4SD/docling), extracts the article content, and saves it as markdown for later retrieval. IBM Db2 backing is planned for later stages.
 
 Built incrementally — each stage under [stages/](stages/) is a self-contained, runnable snapshot showing how the app evolves from a minimal save endpoint toward more sophisticated processing.
 
