@@ -9,6 +9,7 @@ Replaces the filesystem write from stage 1 with an INSERT into a Db2 `DOCUMENTS`
 - **Connection:** one long-lived `ibm_db.connect(...)` at module load, same pattern as `DocumentConverter`.
 - **Save flow:** `converter.convert(url).document.export_to_markdown()` → `INSERT INTO DOCUMENTS` → return the new identity column value as `id`.
 - **No filesystem writes.** Existing markdown files from stage 1 in `~/second-brain/` are left untouched.
+- **Browse pages:** `GET /documents` lists saved docs (newest first), `GET /documents/{id}` renders the markdown as HTML via `marko`. Light inline CSS for readable typography.
 
 Assumes you're running as the Db2 instance owner (`db2inst1`) against the locally cataloged `SAMPLE` database. Edit the `ibm_db.connect(...)` line in `app.py` if your setup differs.
 

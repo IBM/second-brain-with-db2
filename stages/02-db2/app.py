@@ -1,4 +1,7 @@
+from html import escape
+
 import ibm_db
+import marko
 import uvicorn
 from docling.document_converter import DocumentConverter
 from fastapi import FastAPI
@@ -14,9 +17,12 @@ class SaveRequest(BaseModel):
     url: str
 
 
-PAGE = """<!doctype html>
+STYLE = "<style>body{max-width:780px;margin:2em auto;font-family:system-ui,sans-serif;line-height:1.6;padding:0 1em}pre{background:#f5f5f5;padding:1em;overflow-x:auto;border-radius:4px}</style>"
+
+SAVE_PAGE = """<!doctype html>
 <title>second-brain-with-db2</title>
 <h1>second-brain-with-db2</h1>
+<p><a href="/documents">view saved documents &rarr;</a></p>
 <input id="u" size="60" placeholder="https://...">
 <button onclick="save()">Save</button>
 <p id="s"></p>
@@ -39,7 +45,7 @@ async function save() {
 
 @app.get("/", response_class=HTMLResponse)
 def index():
-    return PAGE
+    return STYLE + SAVE_PAGE
 
 
 @app.post("/save")
@@ -49,6 +55,23 @@ def save(req: SaveRequest):
     ibm_db.execute(stmt, (req.url, markdown))
     row = ibm_db.fetch_tuple(ibm_db.exec_immediate(conn, "VALUES IDENTITY_VAL_LOCAL()"))
     return {"id": int(row[0])}
+
+
+@app.get("/documents", response_class=HTMLResponse)
+def list_documents():
+    stmt = ibm_db.exec_immediate(conn, "SELECT ID, URL, SAVED_AT FROM DOCUMENTS ORDER BY ID DESC")
+    items = ""
+    while (row := ibm_db.fetch_tuple(stmt)):
+        items += f'<li><a href="/documents/{row[0]}">{escape(row[1])}</a> <small>({row[2]})</small></li>'
+    return f'{STYLE}<h1>saved documents</h1><p><a href="/">&larr; save another</a></p><ul>{items or "<li><em>nothing saved yet</em></li>"}</ul>'
+
+
+@app.get("/documents/{doc_id}", response_class=HTMLResponse)
+def view_document(doc_id: int):
+    stmt = ibm_db.prepare(conn, "SELECT URL, CONTENT FROM DOCUMENTS WHERE ID = ?")
+    ibm_db.execute(stmt, (doc_id,))
+    url, content = ibm_db.fetch_tuple(stmt)
+    return f'{STYLE}<p><a href="/documents">&larr; all documents</a></p><p>Source: <a href="{escape(url)}">{escape(url)}</a></p>{marko.convert(content)}'
 
 
 if __name__ == "__main__":
