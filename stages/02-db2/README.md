@@ -10,15 +10,7 @@ Replaces the filesystem write from stage 1 with an INSERT into a Db2 `DOCUMENTS`
 - **Save flow:** `converter.convert(url).document.export_to_markdown()` → `INSERT INTO DOCUMENTS` → return the new identity column value as `id`.
 - **No filesystem writes.** Existing markdown files from stage 1 in `~/second-brain/` are left untouched.
 
-## Configuration
-
-Defaults assume you're running as the Db2 instance owner (`db2inst1`) against a locally cataloged `SAMPLE` database. Override via env vars if needed:
-
-| Variable | Default | Notes |
-|---|---|---|
-| `DB2_DATABASE` | `SAMPLE` | Database alias to connect to |
-| `DB2_USER` | `""` | Empty → implicit OS auth (works for local instance owner) |
-| `DB2_PASSWORD` | `""` | Required if `DB2_USER` is set |
+Assumes you're running as the Db2 instance owner (`db2inst1`) against the locally cataloged `SAMPLE` database. Edit the `ibm_db.connect(...)` line in `app.py` if your setup differs.
 
 ## Run
 

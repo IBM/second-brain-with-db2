@@ -1,5 +1,3 @@
-import os
-
 import ibm_db
 import uvicorn
 from docling.document_converter import DocumentConverter
@@ -7,12 +5,8 @@ from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
-DB2_DATABASE = os.environ.get("DB2_DATABASE", "SAMPLE")
-DB2_USER = os.environ.get("DB2_USER", "")
-DB2_PASSWORD = os.environ.get("DB2_PASSWORD", "")
-
 converter = DocumentConverter()
-conn = ibm_db.connect(DB2_DATABASE, DB2_USER, DB2_PASSWORD)
+conn = ibm_db.connect("SAMPLE", "", "")
 app = FastAPI()
 
 
@@ -52,12 +46,9 @@ def index():
 def save(req: SaveRequest):
     markdown = converter.convert(req.url).document.export_to_markdown()
     stmt = ibm_db.prepare(conn, "INSERT INTO DOCUMENTS (URL, CONTENT) VALUES (?, ?)")
-    ibm_db.bind_param(stmt, 1, req.url)
-    ibm_db.bind_param(stmt, 2, markdown)
-    ibm_db.execute(stmt)
-    result = ibm_db.exec_immediate(conn, "VALUES IDENTITY_VAL_LOCAL()")
-    row = ibm_db.fetch_tuple(result)
-    return {"id": int(row[0]), "url": req.url}
+    ibm_db.execute(stmt, (req.url, markdown))
+    row = ibm_db.fetch_tuple(ibm_db.exec_immediate(conn, "VALUES IDENTITY_VAL_LOCAL()"))
+    return {"id": int(row[0])}
 
 
 if __name__ == "__main__":
