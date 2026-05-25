@@ -11,6 +11,18 @@ if [ ! -d "$VENV_DIR" ]; then
   exit 1
 fi
 
+# Kill any previously-running stage app (any stage). Matches only python
+# processes launched from this project's venv, so unrelated processes
+# on the system aren't touched.
+PIDS=$(pgrep -f "^$VENV_DIR/bin/python " || true)
+if [ -n "$PIDS" ]; then
+  echo "Stopping previous app instance(s): $PIDS"
+  echo "$PIDS" | xargs kill 2>/dev/null || true
+  sleep 1
+  PIDS=$(pgrep -f "^$VENV_DIR/bin/python " || true)
+  [ -n "$PIDS" ] && echo "$PIDS" | xargs kill -9 2>/dev/null || true
+fi
+
 # Call the venv's binaries by absolute path — works even if another
 # venv is already active in the parent shell.
 "$VENV_DIR/bin/python" -m pip install -q -r "$SCRIPT_DIR/requirements.txt"
