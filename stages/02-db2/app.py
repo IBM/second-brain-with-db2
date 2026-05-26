@@ -4,13 +4,17 @@ from html import escape
 import ibm_db
 import marko
 import uvicorn
-from docling.document_converter import DocumentConverter
+from docling.datamodel.base_models import InputFormat
+from docling.datamodel.pipeline_options import PdfPipelineOptions
+from docling.document_converter import DocumentConverter, PdfFormatOption
 from docling_core.types.doc.labels import DocItemLabel
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
-converter = DocumentConverter()
+converter = DocumentConverter(format_options={
+    InputFormat.PDF: PdfFormatOption(pipeline_options=PdfPipelineOptions(do_ocr=False))
+})
 conn = ibm_db.connect("SAMPLE", "", "")
 app = FastAPI()
 
