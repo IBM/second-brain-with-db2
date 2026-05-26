@@ -1,49 +1,28 @@
 import re
 from html import escape
-from urllib.parse import urljoin
 
 import ibm_db
 import marko
-import requests
 import uvicorn
-from bs4 import BeautifulSoup
 from docling.datamodel.base_models import InputFormat
 from docling.datamodel.pipeline_options import PdfPipelineOptions
 from docling.document_converter import DocumentConverter, PdfFormatOption
-from docling_core.types.doc.base import ImageRefMode
 from docling_core.types.doc.labels import DocItemLabel
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
 converter = DocumentConverter(format_options={
-    InputFormat.PDF: PdfFormatOption(pipeline_options=PdfPipelineOptions(
-        do_ocr=False, generate_picture_images=True
-    ))
+    InputFormat.PDF: PdfFormatOption(pipeline_options=PdfPipelineOptions(do_ocr=False))
 })
 conn = ibm_db.connect("SAMPLE", "", "")
 app = FastAPI()
 
-CONTENT_LABELS = set(DocItemLabel) - {DocItemLabel.PAGE_HEADER, DocItemLabel.PAGE_FOOTER}
+CONTENT_LABELS = set(DocItemLabel) - {DocItemLabel.PAGE_HEADER, DocItemLabel.PAGE_FOOTER, DocItemLabel.PICTURE}
 
 CHROME = {"subscribe", "sign in", "sign up", "log in", "log out", "sign out",
           "share", "comment", "comments", "reply", "save", "like", "bookmark",
           "follow", "following", "continue", "more"}
-
-
-def page_image_urls(page_url: str) -> list[str]:
-    """Fetch the HTML page and return absolute URLs of every <img> tag.
-    Docling's HTML pipeline drops image references; we recover them here."""
-    try:
-        html = requests.get(page_url, timeout=10).text
-    except Exception:
-        return []
-    out = []
-    for img in BeautifulSoup(html, "html.parser").find_all("img"):
-        src = img.get("src") or img.get("data-src")
-        if src:
-            out.append(urljoin(page_url, src))
-    return out
 
 
 def clean_chrome(md: str) -> str:
@@ -97,11 +76,7 @@ def save(req: SaveRequest):
     doc = converter.convert(req.url).document
     title = next((t.text for t in reversed(doc.texts) if t.label == DocItemLabel.TITLE), None)
     stmt = ibm_db.prepare(conn, "INSERT INTO DOCUMENTS (URL, TITLE, CONTENT) VALUES (?, ?, ?)")
-    md = clean_chrome(doc.export_to_markdown(labels=CONTENT_LABELS, image_mode=ImageRefMode.EMBEDDED))
-    if req.url.startswith(("http://", "https://")):
-        imgs = page_image_urls(req.url)
-        if imgs:
-            md += "\n\n---\n\n" + "\n\n".join(f"![]({u})" for u in imgs)
+    md = clean_chrome(doc.export_to_markdown(labels=CONTENT_LABELS))
     ibm_db.execute(stmt, (req.url, title, md))
     row = ibm_db.fetch_tuple(ibm_db.exec_immediate(conn, "VALUES IDENTITY_VAL_LOCAL()"))
     return {"id": int(row[0])}
