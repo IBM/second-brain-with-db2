@@ -3,3 +3,5 @@ fastapi
 uvicorn
 ibm_db
 marko
+requests
+beautifulsoup4
