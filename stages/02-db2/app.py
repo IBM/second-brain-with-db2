@@ -7,13 +7,16 @@ import uvicorn
 from docling.datamodel.base_models import InputFormat
 from docling.datamodel.pipeline_options import PdfPipelineOptions
 from docling.document_converter import DocumentConverter, PdfFormatOption
+from docling_core.types.doc.base import ImageRefMode
 from docling_core.types.doc.labels import DocItemLabel
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
 converter = DocumentConverter(format_options={
-    InputFormat.PDF: PdfFormatOption(pipeline_options=PdfPipelineOptions(do_ocr=False))
+    InputFormat.PDF: PdfFormatOption(pipeline_options=PdfPipelineOptions(
+        do_ocr=False, generate_picture_images=True
+    ))
 })
 conn = ibm_db.connect("SAMPLE", "", "")
 app = FastAPI()
@@ -76,7 +79,8 @@ def save(req: SaveRequest):
     doc = converter.convert(req.url).document
     title = next((t.text for t in reversed(doc.texts) if t.label == DocItemLabel.TITLE), None)
     stmt = ibm_db.prepare(conn, "INSERT INTO DOCUMENTS (URL, TITLE, CONTENT) VALUES (?, ?, ?)")
-    ibm_db.execute(stmt, (req.url, title, clean_chrome(doc.export_to_markdown(labels=CONTENT_LABELS))))
+    md = doc.export_to_markdown(labels=CONTENT_LABELS, image_mode=ImageRefMode.EMBEDDED)
+    ibm_db.execute(stmt, (req.url, title, clean_chrome(md)))
     row = ibm_db.fetch_tuple(ibm_db.exec_immediate(conn, "VALUES IDENTITY_VAL_LOCAL()"))
     return {"id": int(row[0])}
 
