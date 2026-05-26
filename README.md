@@ -2,6 +2,16 @@
 
 > A working second brain you actually build yourself — with IBM Db2 as the foundation and AI doing the heavy lifting.
 
+```mermaid
+flowchart LR
+    Src[📎 Capture<br/>URL · PDF · Doc] --> Ext[🔍 Extract<br/>docling]
+    Ext --> Und[🧠 Understand<br/>LLM · embeddings]
+    Und --> Db2[(🗄️ IBM Db2<br/>text · tags · vectors)]
+    Q[💬 Ask] --> Search[vector search]
+    Search --> Db2
+    Db2 --> Ans[📋 Cited answer]
+```
+
 ## Vision
 
 Most "second brain" tools are products you subscribe to. You feed them your articles, notes, and PDFs, and trust a black box to organize and surface what matters.

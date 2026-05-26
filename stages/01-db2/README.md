@@ -1,14 +1,25 @@
-# Stage 2: store documents in Db2
+# Stage 1: store documents in Db2
 
-Replaces the filesystem write from stage 1 with an INSERT into a Db2 `DOCUMENTS` table. Each save creates a new row with the URL, a timestamp, and the markdown as a `CLOB`.
+Replaces the filesystem write from stage 0 with an INSERT into a Db2 `DOCUMENTS` table. Each save creates a new row with the URL, a timestamp, the article title, and the markdown as a `CLOB`. Adds browse + rendered-view pages.
 
-## What's new vs stage 1
+```mermaid
+flowchart LR
+    URL[📎 URL] --> Save["FastAPI<br/>POST /save"]
+    Save --> Docling[docling<br/>+ clean_chrome]
+    Docling --> Db2[(🗄️ Db2<br/>DOCUMENTS)]
 
-- **Schema** ([schema.sql](schema.sql)): `DOCUMENTS(ID, URL, SAVED_AT, CONTENT CLOB(10M))` with an identity PK. **The table is dropped and recreated on every launch** (`DROP TABLE IF EXISTS` → `CREATE TABLE`) — saved documents do not survive a re-run.
+    Browse[🌐 browser] -->|GET /documents| Db2
+    Db2 -->|GET /documents/id| Render[marko<br/>md → HTML]
+    Render --> Browse
+```
+
+## What's new vs stage 0
+
+- **Schema** ([schema.sql](schema.sql)): `DOCUMENTS(ID, URL, TITLE, SAVED_AT, CONTENT CLOB(10M))` with an identity PK. **The table is dropped and recreated on every launch** (`DROP TABLE IF EXISTS` → `CREATE TABLE`) — saved documents do not survive a re-run.
 - **Driver:** adds `ibm_db` (official IBM Db2 Python driver) to requirements.
 - **Connection:** one long-lived `ibm_db.connect(...)` at module load, same pattern as `DocumentConverter`.
 - **Save flow:** `converter.convert(url).document.export_to_markdown()` → `INSERT INTO DOCUMENTS` → return the new identity column value as `id`.
-- **No filesystem writes.** Existing markdown files from stage 1 in `~/second-brain/` are left untouched.
+- **No filesystem writes.** Existing markdown files from stage 0 in `~/second-brain/` are left untouched.
 - **Browse pages:** `GET /documents` lists saved docs (newest first), `GET /documents/{id}` renders the markdown as HTML via `marko`. Light inline CSS for readable typography.
 - **Title extraction:** during save, the last item labeled `DocItemLabel.TITLE` from the parsed `DoclingDocument` is stored in a nullable `TITLE` column. The list page shows `COALESCE(TITLE, URL)` as the link text, so documents without a recognizable title fall back to their URL.
 - **Chrome cleanup:** `clean_chrome()` filters universal UI labels (`Subscribe`, `Sign in`, `Share`, `Comments`, `'s avatar`, copyright lines, bare digit counts, email-signup placeholders) from the markdown before storing. Platform-specific chrome (e.g., `Restacks`, `Top`/`Latest` tabs) is intentionally not filtered to keep the rules general.
@@ -22,7 +33,7 @@ Assumes you're running as the Db2 instance owner (`db2inst1`) against the locall
 From the project root (with `.venv` created):
 
 ```bash
-./stages/02-db2/run.sh
+./stages/01-db2/run.sh
 ```
 
 The script installs deps, runs `schema.sql` against the target database (**this wipes the `DOCUMENTS` table**), then launches the app on http://127.0.0.1:8000.

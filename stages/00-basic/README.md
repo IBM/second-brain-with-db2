@@ -1,6 +1,13 @@
-# Stage 1: Basic save endpoint
+# Stage 0: Basic save endpoint
 
 The minimum viable second-brain-with-db2: one form, one POST endpoint, one markdown file per save.
+
+```mermaid
+flowchart LR
+    URL[📎 URL] --> Save["FastAPI<br/>POST /save"]
+    Save --> Docling[docling<br/>extract]
+    Docling --> File[📄 ~/second-brain/<br/>YYYY-MM-DD_HHMMSS.md]
+```
 
 ## What's in this stage
 
@@ -25,7 +32,7 @@ Everything else in `app.py` is plumbing around that one line.
 From the project root (with `.venv` created):
 
 ```bash
-./stages/01-basic/run.sh
+./stages/00-basic/run.sh
 ```
 
 Or from this directory: `./run.sh`. The script activates the shared venv, installs this stage's requirements, and launches the app.
