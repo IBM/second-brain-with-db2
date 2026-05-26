@@ -13,6 +13,8 @@ converter = DocumentConverter()
 conn = ibm_db.connect("SAMPLE", "", "")
 app = FastAPI()
 
+CONTENT_LABELS = set(DocItemLabel) - {DocItemLabel.PAGE_HEADER, DocItemLabel.PAGE_FOOTER}
+
 
 class SaveRequest(BaseModel):
     url: str
@@ -54,7 +56,7 @@ def save(req: SaveRequest):
     doc = converter.convert(req.url).document
     title = next((t.text for t in reversed(doc.texts) if t.label == DocItemLabel.TITLE), None)
     stmt = ibm_db.prepare(conn, "INSERT INTO DOCUMENTS (URL, TITLE, CONTENT) VALUES (?, ?, ?)")
-    ibm_db.execute(stmt, (req.url, title, doc.export_to_markdown()))
+    ibm_db.execute(stmt, (req.url, title, doc.export_to_markdown(labels=CONTENT_LABELS)))
     row = ibm_db.fetch_tuple(ibm_db.exec_immediate(conn, "VALUES IDENTITY_VAL_LOCAL()"))
     return {"id": int(row[0])}
 
