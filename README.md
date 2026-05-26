@@ -1,6 +1,10 @@
 # second-brain-with-db2
 
-> A working second brain you actually build yourself — with IBM Db2 as the foundation and AI doing the heavy lifting.
+> **Status:** work in progress. New stages land as I build them.
+
+I'm building a second brain on IBM Db2. It's a real app, not a demo. I'm the first user.
+
+Built in public, one stage at a time. Read the code, run any version, watch the next one land.
 
 ```mermaid
 flowchart LR
@@ -16,30 +20,49 @@ flowchart LR
 
 Most "second brain" tools are products you subscribe to. You feed them your articles, notes, and PDFs, and trust a black box to organize and surface what matters.
 
-This repository takes a different path: it's a **build-it-yourself second brain**, and the database underneath isn't a hidden vector store you'll never see. It's IBM Db2 — the same enterprise database that runs banks, airlines, and supply chains — used here to power a personal AI application.
+I'd rather build my own. The database underneath isn't a hidden vector store. It's IBM Db2, the same engine that runs banks and airlines, here powering a personal AI app you can read end to end.
 
-The point isn't just to end up with a working knowledge base. It's to show, step by step and at the code level, what it actually takes to build an AI-native application on Db2: storing documents, generating embeddings, running vector search, integrating with LLMs, and orchestrating the whole pipeline. By the end you'll have your own second brain *and* a clear mental model for building similar AI applications on Db2 for any domain.
+A personal tool that's educational because it's built in public.
 
-This is a teaching repository disguised as a personal tool. Every stage is small enough to read in one sitting, runnable on its own, and progressive — Stage 1 is fifty lines of Python; later stages add Db2 storage, vector embeddings, LLM-powered summarization and categorization, and retrieval-augmented Q&A.
+## Who this is for
 
-If you're an application developer who wants to understand how to use Db2 as the infrastructure for real AI applications, this is for you. If you're a knowledge worker who's tired of letting opaque SaaS tools own your reading and thinking, this is also for you.
+If you're an engineer preparing for a career in AI, you don't need another finished tutorial. You need to see someone build, stumble, refactor, and ship.
 
-## The Use Case
+That's what this is. The lessons apply beyond Db2.
 
-I'm an AI architect for IBM Db2. Every week I come across articles, blog posts, research papers, technical documentation, PDFs, and conference talks worth coming back to. Saving them in cloud folders or browser bookmarks is where good intentions go to die — once something is "saved," I rarely find it again.
+## How I'm building it
 
-What I actually want is a place where my reading material lives, gets understood, and stays useful:
+→ One feature at a time.
+→ Minimalist before robust. Functionality first.
+→ Every stage lives in its own folder. Run any version, read the code, move to the next.
+→ AI coding agents allowed, with guardrails. No skipping the thinking.
+
+## The use case
+
+I read a lot for work. Articles, papers, conference talks, PDFs, docs. Most of it ends up "saved" somewhere I never look again.
+
+What I want instead is a place where my reading lives, gets understood, and stays useful:
 
 - **Capture from anywhere.** Paste a URL. Upload a PDF. Drop in a document. The app fetches the content, extracts the meaningful text (no ads, no navigation chrome), and stores it.
-- **Understand on arrival.** Each item is summarized and tagged automatically by an LLM — so a 40-page paper or a long-read article gives me its argument in five sentences without me re-reading it.
+- **Understand on arrival.** Each item is summarized and tagged automatically by an LLM, so a 40-page paper or a long-read article gives me its argument in five sentences without me re-reading it.
 - **Categorize and connect.** Across everything I've collected, the app finds themes: what topics are recurring, what sources are converging on the same ideas, what's actually fresh versus rehashed.
 - **Search by meaning, not keywords.** Vector search over the full text means I can ask *"what did anyone say about hybrid retrieval in production?"* and get answers from a six-month-old blog post and a paper from last week, with citations.
-- **Synthesize on demand.** Ask the second brain a real question and it answers using only the material I've collected — grounded in my own curated reading, not the open internet.
+- **Synthesize on demand.** Ask the second brain a real question and it answers using only the material I've collected. Grounded in my own curated reading, not the open internet.
 
-Db2 is the foundation throughout. The full text, the metadata, the vector embeddings, the tags, the relationships between items — all stored and queried in Db2. The same SQL that runs the world's enterprise data also runs my second brain. That's the demonstration.
+Db2 is the foundation throughout. Text, metadata, vector embeddings, tags, relationships, all stored and queried in Db2. The same SQL that runs the world's enterprise data also runs my second brain.
 
 ## How the repository is organized
 
-This is a staged build. Each stage stands alone, runs end-to-end, and adds one new capability. You can follow along chapter by chapter, or jump to the stage that solves your problem.
+Each stage lives in its own folder under [stages/](stages/). Self-contained, runnable, adds one capability over the previous. Start at [00-basic](stages/00-basic/) and walk forward.
 
-*Stages and detailed walkthroughs will appear here as the repository grows.*
+Stage-by-stage notes will appear here as more stages land.
+
+## Follow along
+
+I'm posting the build in public on LinkedIn: `<your-linkedin-url-here>`
+
+Longer write-ups, lessons, and the occasional dead end go there. Code lives here.
+
+## License
+
+Apache 2.0. See [LICENSE](LICENSE).
