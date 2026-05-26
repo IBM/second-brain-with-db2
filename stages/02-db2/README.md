@@ -11,6 +11,7 @@ Replaces the filesystem write from stage 1 with an INSERT into a Db2 `DOCUMENTS`
 - **No filesystem writes.** Existing markdown files from stage 1 in `~/second-brain/` are left untouched.
 - **Browse pages:** `GET /documents` lists saved docs (newest first), `GET /documents/{id}` renders the markdown as HTML via `marko`. Light inline CSS for readable typography.
 - **Title extraction:** during save, the last item labeled `DocItemLabel.TITLE` from the parsed `DoclingDocument` is stored in a nullable `TITLE` column. The list page shows `COALESCE(TITLE, URL)` as the link text, so documents without a recognizable title fall back to their URL.
+- **Chrome cleanup:** `clean_chrome()` filters universal UI labels (`Subscribe`, `Sign in`, `Share`, `Comments`, `'s avatar`, copyright lines, bare digit counts, email-signup placeholders) from the markdown before storing. Platform-specific chrome (e.g., `Restacks`, `Top`/`Latest` tabs) is intentionally not filtered to keep the rules general.
 
 Assumes you're running as the Db2 instance owner (`db2inst1`) against the locally cataloged `SAMPLE` database. Edit the `ibm_db.connect(...)` line in `app.py` if your setup differs.
 
