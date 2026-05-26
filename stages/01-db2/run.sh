@@ -27,12 +27,20 @@ fi
 # venv is already active in the parent shell.
 "$VENV_DIR/bin/python" -m pip install -q -r "$SCRIPT_DIR/requirements.txt"
 
-# Bootstrap the Db2 schema. schema.sql drops and recreates DOCUMENTS,
-# so saved documents are wiped on every launch.
+# Bootstrap the Db2 schema. CREATE TABLE IF NOT EXISTS emits SQL4136W
+# (CLP exit code 2) on re-runs when the table already exists; treat that
+# as success. Exit codes >2 are real errors and should propagate.
 source ~/sqllib/db2profile
 db2 connect to "${DB2_DATABASE:-SAMPLE}" > /dev/null
+set +e
 db2 -tf "$SCRIPT_DIR/schema.sql"
+schema_status=$?
+set -e
 db2 terminate > /dev/null
+if [ "$schema_status" -gt 2 ]; then
+  echo "Error: schema apply failed (db2 CLP exit $schema_status)" >&2
+  exit "$schema_status"
+fi
 
 cd "$SCRIPT_DIR"
 exec "$VENV_DIR/bin/python" app.py

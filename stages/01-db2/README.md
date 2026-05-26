@@ -8,19 +8,19 @@ flowchart LR
     Save --> Docling[docling<br/>+ clean_chrome]
     Docling --> Db2[(🗄️ Db2<br/>DOCUMENTS)]
 
-    Browse[🌐 browser] -->|GET /documents| Db2
+    Browse[🌐 browser] -->|GET /| Db2
     Db2 -->|GET /documents/id| Render[marko<br/>md → HTML]
     Render --> Browse
 ```
 
 ## What's new vs stage 0
 
-- **Schema** ([schema.sql](schema.sql)): `DOCUMENTS(ID, URL, TITLE, SAVED_AT, CONTENT CLOB(10M))` with an identity PK. **The table is dropped and recreated on every launch** (`DROP TABLE IF EXISTS` → `CREATE TABLE`) — saved documents do not survive a re-run.
+- **Schema** ([schema.sql](schema.sql)): `DOCUMENTS(ID, URL, TITLE, SAVED_AT, CONTENT CLOB(10M))` with an identity PK and a `UNIQUE` constraint on `URL`. Created with `CREATE TABLE IF NOT EXISTS`, so saved documents persist across launches.
 - **Driver:** adds `ibm_db` (official IBM Db2 Python driver) to requirements.
 - **Connection:** one long-lived `ibm_db.connect(...)` at module load, same pattern as `DocumentConverter`.
-- **Save flow:** `converter.convert(url).document.export_to_markdown()` → `INSERT INTO DOCUMENTS` → return the new identity column value as `id`.
+- **Save flow:** check `DOCUMENTS` for the URL first; if it's already there, return the existing id with `duplicate: true`. Otherwise `converter.convert(url).document.export_to_markdown()` → `INSERT INTO DOCUMENTS` → return the new identity column value with `duplicate: false`.
 - **No filesystem writes.** Existing markdown files from stage 0 in `~/second-brain/` are left untouched.
-- **Browse pages:** `GET /documents` lists saved docs (newest first), `GET /documents/{id}` renders the markdown as HTML via `marko`. Light inline CSS for readable typography.
+- **Single home page (`GET /`):** input form on top, list of saved documents below. After a successful save, the page reloads so the new doc appears in the list. Duplicate URLs are surfaced inline ("Already saved as id N") without a reload. `GET /documents/{id}` renders the stored markdown as HTML via `marko`.
 - **Title extraction:** during save, the last item labeled `DocItemLabel.TITLE` from the parsed `DoclingDocument` is stored in a nullable `TITLE` column. The list page shows `COALESCE(TITLE, URL)` as the link text, so documents without a recognizable title fall back to their URL.
 - **Chrome cleanup:** `clean_chrome()` filters universal UI labels (`Subscribe`, `Sign in`, `Share`, `Comments`, `'s avatar`, copyright lines, bare digit counts, email-signup placeholders) from the markdown before storing. Platform-specific chrome (e.g., `Restacks`, `Top`/`Latest` tabs) is intentionally not filtered to keep the rules general.
 - **Text only:** images are deliberately excluded from `CONTENT_LABELS` (along with `PAGE_HEADER` and `PAGE_FOOTER`). The saved markdown is article text only, no figures or `<!-- image -->` placeholders.
@@ -36,7 +36,7 @@ From the project root (with `.venv` created):
 ./stages/01-db2/run.sh
 ```
 
-The script installs deps, runs `schema.sql` against the target database (**this wipes the `DOCUMENTS` table**), then launches the app on http://127.0.0.1:8000.
+The script installs deps, applies `schema.sql` (idempotent — `CREATE TABLE IF NOT EXISTS`), then launches the app on http://127.0.0.1:8000. Existing rows are preserved across restarts.
 
 ## Inspect saved documents
 
